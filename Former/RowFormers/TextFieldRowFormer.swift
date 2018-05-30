@@ -40,7 +40,13 @@ open class TextFieldRowFormer<T: UITableViewCell>
         onTextChanged = handler
         return self
     }
-    
+
+    @discardableResult
+    public final func onTextEndEdit(_ handler: @escaping ((String) -> Void)) -> Self {
+        onTextEndEdit = handler
+        return self
+    }
+
     open override func cellInitialized(_ cell: T) {
         super.cellInitialized(cell)
         let textField = cell.formTextField()
@@ -91,7 +97,8 @@ open class TextFieldRowFormer<T: UITableViewCell>
     }
     
     // MARK: Private
-    
+
+    private final var onTextEndEdit: ((String) -> Void)?
     private final var onTextChanged: ((String) -> Void)?
     private final var textColor: UIColor?
     private final var titleColor: UIColor?
@@ -117,6 +124,11 @@ open class TextFieldRowFormer<T: UITableViewCell>
         if enabled {
             _ = titleColor.map { titleLabel?.textColor = $0 }
             titleColor = nil
+
+            let text = textField.text ?? ""
+            self.text = text
+            onTextEndEdit?(text)
+
         } else {
             if titleColor == nil { titleColor = titleLabel?.textColor ?? .black }
             _ = titleEditingColor.map { titleLabel?.textColor = $0 }

@@ -43,7 +43,13 @@ open class TextViewRowFormer<T: UITableViewCell>
         onTextChanged = handler
         return self
     }
-    
+
+    @discardableResult
+    public final func onTextEndEdit(_ handler: @escaping ((String) -> Void)) -> Self {
+        onTextEndEdit = handler
+        return self
+    }
+
     open override func initialized() {
         super.initialized()
         rowHeight = 110
@@ -115,7 +121,8 @@ open class TextViewRowFormer<T: UITableViewCell>
     }
     
     // MARK: Private
-    
+
+    fileprivate final var onTextEndEdit: ((String) -> Void)?
     fileprivate final var onTextChanged: ((String) -> Void)?
     fileprivate final var textColor: UIColor?
     fileprivate final var titleColor: UIColor?
@@ -179,6 +186,11 @@ NSObject, UITextViewDelegate where T: TextViewFormableRow {
         if textViewRowFormer.enabled {
             _ = textViewRowFormer.titleColor.map { titleLabel?.textColor = $0 }
             textViewRowFormer.titleColor = nil
+
+            let text = textView.text ?? ""
+            textViewRowFormer.text = text
+            textViewRowFormer.onTextEndEdit?(text)
+
         } else {
             if textViewRowFormer.titleColor == nil {
                 textViewRowFormer.titleColor = titleLabel?.textColor ?? .black
